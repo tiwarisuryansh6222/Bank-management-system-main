@@ -1,6 +1,6 @@
 # 🏦 Bank Management System (Java + MySQL)
 
-A Java Swing-based desktop banking application that allows users to perform essential banking operations such as account creation (signup), login authentication, deposits, withdrawals, PIN changes, balance enquiry, and mini statement generation.
+A Java Swing-based desktop banking application that allows users to perform essential banking operations such as account creation (multi-step signup), secure login, deposits, withdrawals, PIN changes, balance enquiry, and mini statement generation.
 
 Built using **Java**, **Java Swing/AWT**, and **MySQL**, this project demonstrates GUI-based transaction handling with full database integration via JDBC.
 
@@ -13,36 +13,38 @@ Built using **Java**, **Java Swing/AWT**, and **MySQL**, this project demonstrat
 - [Project Structure](#-project-structure)
 - [Prerequisites](#-prerequisites)
 - [Database Setup](#-step-1-database-setup)
-- [How to Compile & Run](#-step-2-compile--run-from-command-line)
+- [Compile & Run](#-step-2-compile--run-from-command-line)
+- [Testing Instructions](#-testing-instructions)
 - [Application Flow](#-application-flow)
-- [Test Credentials](#-test-credentials)
+- [Design Documentation](#-design-documentation)
 
 ---
 
 ## ✅ Features
 
 | Feature | Description |
-|---|---|
-| User Signup | Multi-step account creation (personal info, KYC, account type) |
+|---------|-------------|
+| Multi-Step User Signup | 3-screen registration: personal info → KYC → account type & PIN |
 | Login Authentication | Secure login using card number and PIN |
-| Deposit | Credit money into the account |
-| Cash Withdrawal | Debit money from the account |
+| Deposit | Credit money; transaction logged with date |
+| Cash Withdrawal | Debit money with database update |
 | Mini Statement | View last 5 transactions |
-| Balance Enquiry | Check real-time account balance |
-| PIN Change | Update account PIN securely |
-| Exit | Safely close the application |
+| Balance Enquiry | Real-time account balance |
+| PIN Change | Securely update account PIN |
+| MySQL Integration | All data stored and fetched from MySQL via JDBC |
 
 ---
 
 ## 🧰 Technologies Used
 
 | Component | Technology |
-|---|---|
+|-----------|------------|
 | Language | Java (JDK 8+) |
 | GUI Framework | Java Swing / AWT |
 | Database | MySQL 8.x |
 | DB Driver | MySQL Connector/J 8.0.28 (included) |
 | Date Picker | JCalendar 1.3.3 (included) |
+| Version Control | Git / GitHub |
 
 ---
 
@@ -55,7 +57,7 @@ Bank-Management-System-main/
 │   └── bank/
 │       └── management/
 │           └── system/
-│               ├── login.java        # Entry point – Login screen
+│               ├── login.java        # Entry point — Login screen
 │               ├── signup.java       # Step 1: Personal details
 │               ├── signup2.java      # Step 2: KYC / additional info
 │               ├── signup3.java      # Step 3: Account type & PIN setup
@@ -67,12 +69,15 @@ Bank-Management-System-main/
 │               └── dbcon.java        # Database connection utility
 │
 ├── src/icon/                         # Application images/icons
+├── docs/
+│   └── design.md                     # UML diagrams, ER diagram, architecture
 ├── mysql-connector-java-8.0.28.jar   # JDBC driver (included)
 ├── jcalendar-tz-1.3.3-4.jar         # Date picker library (included)
 ├── bankmanagement.sql                # Database schema & setup script
 ├── compile.bat                       # Windows: compile script
 ├── run.bat                           # Windows: run script
 ├── run.sh                            # Linux/macOS: compile & run script
+├── statement.md                      # Problem statement & project scope
 └── README.md
 ```
 
@@ -80,7 +85,7 @@ Bank-Management-System-main/
 
 ## 🔧 Prerequisites
 
-Before running the project, make sure the following are installed on your system:
+Before running the project, ensure the following are installed:
 
 1. **Java Development Kit (JDK) 8 or higher**
    - Verify: `java -version` and `javac -version`
@@ -90,7 +95,7 @@ Before running the project, make sure the following are installed on your system
    - Verify: `mysql --version`
    - Download: https://dev.mysql.com/downloads/mysql/
 
-> ⚠️ **Note:** The required JAR files (`mysql-connector-java-8.0.28.jar` and `jcalendar-tz-1.3.3-4.jar`) are **already included** in the repository root. No additional download is needed.
+> ⚠️ The JAR files (`mysql-connector-java-8.0.28.jar` and `jcalendar-tz-1.3.3-4.jar`) are **already included** in the repository root. No extra download needed.
 
 ---
 
@@ -102,13 +107,13 @@ Open a terminal and log in to MySQL:
 mysql -u root -p
 ```
 
-Then run the SQL setup script:
+Run the SQL setup script:
 
 ```bash
-source /path/to/bankmanagement.sql
+source /full/path/to/bankmanagement.sql
 ```
 
-**Or** copy and paste the following SQL commands manually:
+**Or** paste this SQL manually:
 
 ```sql
 CREATE DATABASE banksystem;
@@ -170,15 +175,13 @@ CREATE TABLE bank (
 
 ### ⚙️ Configure Database Credentials
 
-Open `src/bank/management/system/dbcon.java` and update the connection string if your MySQL credentials differ:
+Open `src/bank/management/system/dbcon.java` and update line 13 if your MySQL root password is not empty:
 
 ```java
 connection = DriverManager.getConnection(
-    "jdbc:mysql://localhost:3306/banksystem", "root", "your_password"
+    "jdbc:mysql://localhost:3306/banksystem", "root", "your_password_here"
 );
 ```
-
-By default the password is set to empty (`""`). If your MySQL root user has a password, update it here.
 
 ---
 
@@ -186,19 +189,18 @@ By default the password is set to empty (`""`). If your MySQL root user has a pa
 
 ### On Windows
 
-**Step 2a – Compile:**
+**Compile:**
 ```cmd
 compile.bat
 ```
 
-**Step 2b – Run:**
+**Run:**
 ```cmd
 run.bat
 ```
 
 ### On Linux / macOS
 
-**Make the script executable and run:**
 ```bash
 chmod +x run.sh
 ./run.sh
@@ -206,14 +208,10 @@ chmod +x run.sh
 
 ### Manual Compilation (any OS)
 
-If you prefer to compile manually, run the following from the project root directory:
-
 **Windows:**
 ```cmd
+mkdir out
 javac -cp ".;mysql-connector-java-8.0.28.jar;jcalendar-tz-1.3.3-4.jar" -sourcepath src -d out src/bank/management/system/login.java src/bank/management/system/signup.java src/bank/management/system/signup2.java src/bank/management/system/signup3.java src/bank/management/system/welcome.java src/bank/management/system/deposit.java src/bank/management/system/withdrawal.java src/bank/management/system/mini.java src/bank/management/system/pinchange.java src/bank/management/system/dbcon.java
-```
-
-```cmd
 xcopy /E /I src\icon out\icon
 java -cp "out;mysql-connector-java-8.0.28.jar;jcalendar-tz-1.3.3-4.jar" bank.management.system.login
 ```
@@ -228,53 +226,84 @@ java -cp "out:mysql-connector-java-8.0.28.jar:jcalendar-tz-1.3.3-4.jar" bank.man
 
 ---
 
+## 🧪 Testing Instructions
+
+### Quick Test — Insert Test Data
+
+To test the application immediately without going through signup, run in MySQL:
+
+```sql
+USE banksystem;
+
+-- Insert test login credentials
+INSERT INTO login (application_no, card_number, pin) VALUES (1001, '1234567890123456', '1234');
+
+-- Insert some test transactions
+INSERT INTO bank (pin, date, type, amount) VALUES ('1234', '2024-01-01', 'Deposit', '10000');
+INSERT INTO bank (pin, date, type, amount) VALUES ('1234', '2024-01-02', 'Withdrawal', '2000');
+INSERT INTO bank (pin, date, type, amount) VALUES ('1234', '2024-01-03', 'Deposit', '5000');
+```
+
+**Login with:**
+- **Card Number:** `1234567890123456`
+- **PIN:** `1234`
+
+---
+
+### Test Case Table
+
+| Test Case | Steps | Expected Result |
+|-----------|-------|-----------------|
+| TC-01: Valid Login | Enter valid card number + PIN → Click Sign-In | Redirected to Welcome dashboard |
+| TC-02: Invalid Login | Enter wrong card/PIN → Click Sign-In | Stays on login screen |
+| TC-03: Deposit | Login → Click Deposit → Enter amount → Submit | Success dialog; transaction recorded in DB |
+| TC-04: Withdrawal | Login → Click Cash Withdrawal → Enter amount → Submit | Success dialog; balance reduced |
+| TC-05: Mini Statement | Login → Click Mini Statement | Last 5 transactions displayed |
+| TC-06: Balance Enquiry | Login → Click Balance Enquiry | Current balance shown in dialog |
+| TC-07: PIN Change | Login → Click PIN Change → Enter old/new PIN → Submit | PIN updated in login and signup3 tables |
+| TC-08: New Signup | Click Sign-Up → Complete 3 steps | Account created; can log in with new credentials |
+
+---
+
 ## 🔄 Application Flow
 
 ```
 Login Screen
     │
-    ├── [New User] → Signup Step 1 (Personal Info)
-    │                     → Signup Step 2 (KYC Details)
-    │                           → Signup Step 3 (Account Type & PIN)
-    │                                 → Login Screen
+    ├── [New User] ──► Signup Step 1 (Personal Info)
+    │                        ──► Signup Step 2 (KYC Details)
+    │                                ──► Signup Step 3 (Account Type & PIN)
+    │                                          ──► Back to Login
     │
-    └── [Existing User] → Welcome Dashboard
-                              │
-                              ├── Deposit
-                              ├── Cash Withdrawal
-                              ├── Mini Statement (last 5 transactions)
-                              ├── Balance Enquiry
-                              ├── PIN Change
-                              └── Exit
+    └── [Existing User] ──► Welcome Dashboard
+                                   │
+                                   ├── Deposit
+                                   ├── Cash Withdrawal
+                                   ├── Mini Statement (last 5 transactions)
+                                   ├── Balance Enquiry
+                                   ├── PIN Change
+                                   └── Exit
 ```
 
 ---
 
-## 🔑 Test Credentials
+## 📐 Design Documentation
 
-To test the application without going through the full signup, insert a test record into MySQL:
+Full design artefacts including system architecture, UML diagrams (Use Case, Class, Sequence), ER diagram, and workflow diagram are available in:
 
-```sql
-USE banksystem;
-INSERT INTO login (application_no, card_number, pin) VALUES (1001, '1234567890123456', '1234');
-INSERT INTO bank (pin, date, type, amount) VALUES ('1234', '2024-01-01', 'Deposit', '10000');
-```
-
-Then log in with:
-- **Card Number:** `1234567890123456`
-- **PIN:** `1234`
+📄 **[docs/design.md](docs/design.md)**
 
 ---
 
 ## 🧾 Troubleshooting
 
 | Issue | Solution |
-|---|---|
-| `javac` not found | Add JDK `bin` folder to your system PATH |
-| `java` not found | Add JRE/JDK `bin` folder to your system PATH |
-| MySQL connection refused | Ensure MySQL service is running (`net start mysql` on Windows) |
-| Wrong credentials error | Update password in `dbcon.java` to match your MySQL setup |
-| Icons not loading | Ensure the `out/icon/` directory exists (compile script handles this) |
+|-------|---------|
+| `javac` not found | Add JDK `bin` to system PATH |
+| MySQL connection refused | Run `net start mysql` (Windows) or `sudo service mysql start` (Linux) |
+| Wrong credentials error | Update password in `dbcon.java` line 13 |
+| Icons not loading | Ensure `out/icon/` folder exists — compile script handles this |
+| `ClassNotFoundException` | Ensure JAR files are in the project root folder |
 
 ---
 
@@ -288,7 +317,8 @@ Then log in with:
 
 ## 📌 Future Enhancements
 
-- Password/PIN hashing for enhanced security
+- PIN/password hashing (BCrypt) for security
 - Transaction receipts and PDF export
 - REST API backend for web-based access
-- Role-based admin and customer access
+- Admin panel for bank staff
+- Role-based access control
